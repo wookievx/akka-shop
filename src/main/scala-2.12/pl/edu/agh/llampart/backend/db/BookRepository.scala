@@ -39,7 +39,9 @@ class BookRepository(contentRoot: String) {
   def findBook(title: String): Future[Book] = {
     val reg1Lookup = registryLookup(`registry_1.txt`, title)
     val reg2Lookup = registryLookup(`registry_2.txt`, title)
-    Seq(reg1Lookup, reg2Lookup).reduce(_ fallbackTo _)
+    val f1 = Seq(reg1Lookup, reg2Lookup).reduce(_ fallbackTo _)
+    val f2 = Seq(reg2Lookup, reg1Lookup).reduce(_ fallbackTo _)
+    Future.firstCompletedOf(Seq(f1, f2))
   }
 
   private def registryReader(registry: String): Source[Book, NotUsed] = Source.fromIterator { () =>
