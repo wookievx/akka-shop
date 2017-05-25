@@ -1,20 +1,17 @@
 package pl.edu.agh.llampart.backend.db
 
 import akka.NotUsed
-import akka.actor.{Actor, ActorRef, Props}
-import akka.actor.Actor.Receive
+import akka.actor.{Actor, Props}
 import akka.event.jul.Logger
-import pl.edu.agh.llampart.backend.db.RequestHandler.Search
 import akka.pattern.ask
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Concat, Sink, Source}
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
-import org.reactivestreams.{Publisher, Subscriber}
 import pl.edu.agh.llampart.backend.db.BookRepository.Book
 import pl.edu.agh.llampart.backend.db.UserAccountDb.{DoesUserOwns, PersistDb, RestoreDb, UserOwns}
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
