@@ -16,8 +16,10 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
 class RequestHandler(bookRepository: BookRepository, orderDbPath: String, userAccountDbPath: String)(implicit materializer: ActorMaterializer) extends Actor {
+
   import RequestHandler._
   import context.dispatcher
+
   private implicit val timeout = Timeout(10 seconds)
   private val logger = Logger(getClass.getSimpleName)
 
@@ -39,7 +41,9 @@ class RequestHandler(bookRepository: BookRepository, orderDbPath: String, userAc
       val sendTo = sender()
       bookRepository.findBook(title).onComplete {
         case Success(b) =>
-        sendTo ! Exists(b)
+          sendTo ! Exists(b)
+        case Failure(r) =>
+          sendTo ! NotFound(title)
       }
     case ord@Order(title, client) =>
       val sendTo = sender()
