@@ -1,7 +1,8 @@
 package pl.edu.agh.llampart.client
 
 import akka.actor.Actor.Receive
-import akka.actor.{Actor, ActorRef, ActorSelection, Props}
+import akka.actor.SupervisorStrategy.Resume
+import akka.actor.{Actor, ActorRef, ActorSelection, OneForOneStrategy, Props, SupervisorStrategy}
 import akka.event.jul.Logger
 import pl.edu.agh.llampart.backend.ServerStart
 import pl.edu.agh.llampart.backend.db.BookRepository.Book
@@ -13,6 +14,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 class Client(id: String) extends Actor {
 
@@ -92,6 +94,10 @@ class Client(id: String) extends Actor {
       logger.info(s"Book with title: $title not found")
     case NotOwned(title) =>
       logger.info(s"Book with title: $title not owned")
+  }
+
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(10){
+    case NonFatal(e) => Resume
   }
 }
 

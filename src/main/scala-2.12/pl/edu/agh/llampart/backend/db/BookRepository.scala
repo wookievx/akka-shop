@@ -11,6 +11,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.concurrent._
 import scala.util.Success
+import scala.util.control.NonFatal
 
 class BookRepository(contentRoot: String) {
 
@@ -27,9 +28,15 @@ class BookRepository(contentRoot: String) {
 
   private def registryLookup(registry: String, title: String): Future[Book] = Future {
     blocking {
-      fileSource(registry).getLines().collectFirst {
-        case entryRegex(id, price) if id == title =>
-          Book(price.toInt, title)
+      try {
+        fileSource(registry).getLines().collectFirst {
+          case entryRegex(id, price) if id == title =>
+            Book(price.toInt, title)
+        }
+      } catch {
+        case NonFatal(e) =>
+          e.printStackTrace()
+          None
       }
     }
   }.collect {

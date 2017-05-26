@@ -14,8 +14,6 @@ import scala.language.postfixOps
 object ServerStart {
   val handlerName = "handler"
   val systemName = "server"
-  private val tempOrders = "C:/Users/Wookie/Documents/users/orders.txt"
-  private val tempAccounts = "C:/Users/Wookie/Documents/exampledb.txt"
 
 
   private implicit val timeout = Timeout(10 seconds)
@@ -23,10 +21,14 @@ object ServerStart {
 
   def main(args: Array[String]): Unit = {
     val config = ConfigFactory.parseResources("server_config.conf")
+    val booksUrl = config.getString("paths.books-path")
+    val configUrl = config.getString("paths.config-path")
     implicit val actorSystem = ActorSystem(systemName, config)
     implicit val materializer = ActorMaterializer()
     import actorSystem.dispatcher
-    val repository = new BookRepository("C:/Users/Wookie/Documents/books")
+    val repository = new BookRepository(booksUrl)
+    val tempOrders = s"$configUrl/orders.txt"
+    val tempAccounts = s"$configUrl/accounts.txt"
     val serverActor = actorSystem.actorOf(Props(new RequestHandler(repository, tempOrders, tempAccounts)), handlerName)
     scala.io.StdIn.readLine()
     serverActor ? Terminate onComplete { _ => actorSystem.terminate() }

@@ -1,7 +1,8 @@
 package pl.edu.agh.llampart.backend.db
 
 import akka.NotUsed
-import akka.actor.{Actor, Props}
+import akka.actor.SupervisorStrategy.Resume
+import akka.actor.{Actor, OneForOneStrategy, Props, SupervisorStrategy}
 import akka.event.jul.Logger
 import akka.pattern.ask
 import akka.stream.ActorMaterializer
@@ -13,6 +14,7 @@ import pl.edu.agh.llampart.backend.db.UserAccountDb.{DoesUserOwns, PersistDb, Re
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
 class RequestHandler(bookRepository: BookRepository, orderDbPath: String, userAccountDbPath: String)(implicit materializer: ActorMaterializer) extends Actor {
@@ -81,6 +83,10 @@ class RequestHandler(bookRepository: BookRepository, orderDbPath: String, userAc
       (userAccountDb ? PersistDb).onComplete { _ =>
         sendTo ! ()
       }
+  }
+
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(10){
+    case NonFatal(e) => Resume
   }
 }
 
